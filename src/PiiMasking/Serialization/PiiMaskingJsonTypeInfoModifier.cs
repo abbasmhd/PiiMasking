@@ -11,15 +11,18 @@ namespace PiiMasking.Serialization;
 public static class PiiMaskingJsonTypeInfoModifier
 {
     /// <summary>
-    /// Registers the PII masking modifier. <paramref name="propertyStringTransform"/> should resolve from DI (includes <see cref="IPiiMaskingPropertyContributor"/> when registered).
+    /// Registers the PII masking modifier. <paramref name="propertyStringTransform"/> should resolve from DI (includes <see cref="IPiiMaskingPropertyContributor"/> and <see cref="IPiiMaskingExecutionStrategy"/> when registered).
+    /// Pass the same <see cref="IPiiMaskingExecutionStrategy"/> sequence as used to construct <paramref name="propertyStringTransform"/> so properties without <see cref="PropertyInfo"/> still honor <see cref="PiiMaskingAttribute.Mode"/>.
     /// </summary>
     public static void AddPiiMaskingJsonModifier(
         this JsonSerializerOptions options,
         IOptionsMonitor<PiiMaskingSettings> piiMaskingSettings,
-        IPiiMaskedPropertyStringTransform propertyStringTransform)
+        IPiiMaskedPropertyStringTransform propertyStringTransform,
+        IEnumerable<IPiiMaskingExecutionStrategy>? executionStrategies = null)
     {
         ArgumentNullException.ThrowIfNull(propertyStringTransform);
-        void Modifier(JsonTypeInfo typeInfo) => Modify(typeInfo, piiMaskingSettings, propertyStringTransform);
+        var strategiesList = executionStrategies?.ToList();
+        void Modifier(JsonTypeInfo typeInfo) => Modify(typeInfo, piiMaskingSettings, propertyStringTransform, strategiesList);
 
         if (options.TypeInfoResolver is DefaultJsonTypeInfoResolver resolver)
         {
@@ -38,13 +41,15 @@ public static class PiiMaskingJsonTypeInfoModifier
     }
 
     /// <summary>
-    /// Registers the modifier using built-in masking only (no <see cref="IPiiMaskingPropertyContributor"/>). Prefer <see cref="AddPiiMaskingJsonModifier(JsonSerializerOptions, IOptionsMonitor{PiiMaskingSettings}, IPiiMaskedPropertyStringTransform)"/> when using DI.
+    /// Registers the modifier using built-in masking only (no <see cref="IPiiMaskingPropertyContributor"/>). Prefer <see cref="AddPiiMaskingJsonModifier(JsonSerializerOptions, IOptionsMonitor{PiiMaskingSettings}, IPiiMaskedPropertyStringTransform, IEnumerable{IPiiMaskingExecutionStrategy}?)"/> when using DI.
     /// </summary>
     public static void AddPiiMaskingJsonModifier(
         this JsonSerializerOptions options,
-        IOptionsMonitor<PiiMaskingSettings> piiMaskingSettings)
+        IOptionsMonitor<PiiMaskingSettings> piiMaskingSettings,
+        IEnumerable<IPiiMaskingExecutionStrategy>? executionStrategies = null)
     {
-        void Modifier(JsonTypeInfo typeInfo) => ModifyBuiltinOnly(typeInfo, piiMaskingSettings);
+        var strategiesList = executionStrategies?.ToList();
+        void Modifier(JsonTypeInfo typeInfo) => ModifyBuiltinOnly(typeInfo, piiMaskingSettings, strategiesList);
 
         if (options.TypeInfoResolver is DefaultJsonTypeInfoResolver resolver)
         {
@@ -89,7 +94,8 @@ public static class PiiMaskingJsonTypeInfoModifier
     private static void Modify(
         JsonTypeInfo typeInfo,
         IOptionsMonitor<PiiMaskingSettings> piiMaskingSettings,
-        IPiiMaskedPropertyStringTransform propertyStringTransform)
+        IPiiMaskedPropertyStringTransform propertyStringTransform,
+        IReadOnlyList<IPiiMaskingExecutionStrategy>? executionStrategies)
     {
         if (typeInfo.Kind != JsonTypeInfoKind.Object)
         {
@@ -111,7 +117,7 @@ public static class PiiMaskingJsonTypeInfoModifier
 
             if (property.AttributeProvider is not PropertyInfo propertyInfo)
             {
-                property.CustomConverter = new PiiMaskedStringJsonConverter(piiMaskingSettings, attribute);
+                property.CustomConverter = new PiiMaskedStringJsonConverter(piiMaskingSettings, attribute, executionStrategies);
                 continue;
             }
 
@@ -123,7 +129,10 @@ public static class PiiMaskingJsonTypeInfoModifier
         }
     }
 
-    private static void ModifyBuiltinOnly(JsonTypeInfo typeInfo, IOptionsMonitor<PiiMaskingSettings> piiMaskingSettings)
+    private static void ModifyBuiltinOnly(
+        JsonTypeInfo typeInfo,
+        IOptionsMonitor<PiiMaskingSettings> piiMaskingSettings,
+        IReadOnlyList<IPiiMaskingExecutionStrategy>? executionStrategies)
     {
         if (typeInfo.Kind != JsonTypeInfoKind.Object)
         {
@@ -143,7 +152,7 @@ public static class PiiMaskingJsonTypeInfoModifier
                 continue;
             }
 
-            property.CustomConverter = new PiiMaskedStringJsonConverter(piiMaskingSettings, attribute);
+            property.CustomConverter = new PiiMaskedStringJsonConverter(piiMaskingSettings, attribute, executionStrategies);
         }
     }
 }

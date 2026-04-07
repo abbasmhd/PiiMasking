@@ -4,7 +4,7 @@ namespace PiiMasking;
 
 /// <summary>
 /// Hook for custom JSON serializers to apply the same masking as <see cref="PiiMaskingAttribute"/> / <see cref="Serialization.PiiMaskedStringJsonConverter"/>.
-/// The default implementation <see cref="PiiMaskingPropertyStringTransform"/> runs <see cref="IPiiMaskingPropertyContributor"/> instances first, then built-in rules.
+/// The default implementation <see cref="PiiMaskingPropertyStringTransform"/> runs <see cref="IPiiMaskingPropertyContributor"/> instances first, then <see cref="IPiiMaskingExecutionStrategy"/> when <see cref="PiiMaskingAttribute.Mode"/> is set, then built-in rules.
 /// </summary>
 public interface IPiiMaskedPropertyStringTransform
 {

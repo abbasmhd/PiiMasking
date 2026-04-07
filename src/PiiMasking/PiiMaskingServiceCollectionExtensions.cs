@@ -7,7 +7,7 @@ namespace PiiMasking;
 
 /// <summary>
 /// Registers <see cref="PiiMaskingSettings"/> and <see cref="IPiiMaskedPropertyStringTransform"/>.
-/// Register <see cref="IPiiMaskingPropertyContributor"/> implementations with <c>AddSingleton</c> to extend masking before built-in rules.
+/// Register <see cref="IPiiMaskingPropertyContributor"/> and <see cref="IPiiMaskingExecutionStrategy"/> implementations with <c>AddSingleton</c> to extend masking (contributors first, then strategies selected by <see cref="PiiMaskingAttribute.Mode"/>, then built-ins).
 /// </summary>
 public static class PiiMaskingServiceCollectionExtensions
 {

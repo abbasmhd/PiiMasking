@@ -5,19 +5,22 @@ namespace PiiMasking;
 
 /// <summary>
 /// Applies <see cref="PiiMaskingAttribute"/> using <see cref="IOptionsMonitor{T}"/> of <see cref="PiiMaskingSettings"/> (for custom outbound JSON pipelines and MVC JSON).
-/// Runs registered <see cref="IPiiMaskingPropertyContributor"/> instances first, then built-in rules.
+/// Runs registered <see cref="IPiiMaskingPropertyContributor"/> instances first, then <see cref="IPiiMaskingExecutionStrategy"/> when <see cref="PiiMaskingAttribute.Mode"/> is set, then built-in rules.
 /// </summary>
 public sealed class PiiMaskingPropertyStringTransform : IPiiMaskedPropertyStringTransform
 {
     private readonly IOptionsMonitor<PiiMaskingSettings> _settings;
     private readonly IReadOnlyList<IPiiMaskingPropertyContributor> _contributors;
+    private readonly IReadOnlyList<IPiiMaskingExecutionStrategy> _executionStrategies;
 
     public PiiMaskingPropertyStringTransform(
         IOptionsMonitor<PiiMaskingSettings> settings,
-        IEnumerable<IPiiMaskingPropertyContributor>? contributors = null)
+        IEnumerable<IPiiMaskingPropertyContributor>? contributors = null,
+        IEnumerable<IPiiMaskingExecutionStrategy>? executionStrategies = null)
     {
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         _contributors = (contributors ?? Array.Empty<IPiiMaskingPropertyContributor>()).ToList();
+        _executionStrategies = (executionStrategies ?? Array.Empty<IPiiMaskingExecutionStrategy>()).ToList();
     }
 
     /// <inheritdoc />
@@ -42,6 +45,12 @@ public sealed class PiiMaskingPropertyStringTransform : IPiiMaskedPropertyString
             {
                 return contributed;
             }
+        }
+
+        var named = PiiMaskingExecutionStrategyInvoker.TryApplyNamedStrategy(_executionStrategies, value, marker, current);
+        if (named is not null)
+        {
+            return named;
         }
 
         return PiiMaskingKernel.ApplyBuiltin(value, marker, current);

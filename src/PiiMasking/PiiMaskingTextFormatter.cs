@@ -7,6 +7,7 @@ public static class PiiMaskingTextFormatter
 {
     /// <summary>
     /// Formats <paramref name="value"/> for outbound serialization when PII masking is enabled.
+    /// Uses built-in rules only; <see cref="PiiMaskingAttribute.Mode"/> and <see cref="IPiiMaskingExecutionStrategy"/> are not applied here.
     /// </summary>
     /// <param name="maskSuffix">From <see cref="PiiMaskingSettings.MaskSuffix"/>; null uses <see cref="PiiMaskingSettings.DefaultMaskSuffix"/>.</param>
     /// <param name="literalWordMaskSeparators">From <see cref="PiiMaskingSettings.LiteralWordMaskSeparators"/> when using <see cref="PiiMaskingAttribute.MaskEachWordRespectingLiterals"/>.</param>

@@ -10,13 +10,13 @@ APIs and logs often need to return or record **human-readable** text that still 
 
 This library exists to **mask those string values at serialization time** in a **consistent, configurable way**: you mark properties with `[PiiMasking]`, turn masking on or off (and tune suffixes or literal-preserving separators) via configuration, and **incoming JSON is still deserialized as plain text** so your domain model and persistence stay unchanged. Masking applies when **writing** JSON (or when you call the same transform from your own pipelines).
 
-It is not a full data-classification or DLP product; it is a **focused building block**—predictable string transforms, optional ASP.NET Core integration, and **extension points** (`IPiiMaskingPropertyContributor`, custom `IPiiMaskedPropertyStringTransform`) when built-in rules are not enough for your app.
+It is not a full data-classification or DLP product; it is a **focused building block**—predictable string transforms, optional ASP.NET Core integration, and **extension points** (`IPiiMaskingPropertyContributor`, **`IPiiMaskingExecutionStrategy`** for named modes, custom `IPiiMaskedPropertyStringTransform`) when built-in rules are not enough for your app.
 
 ## Packages
 
 | Package | Description |
 |--------|-------------|
-| `PiiMasking` | Core: `PiiMaskingSettings`, built-in masking strategies, `[PiiMasking]`, JSON converter + modifier, DI helpers |
+| `PiiMasking` | Core: `PiiMaskingSettings`, built-in masking rules, `[PiiMasking]` (including `Mode` for custom strategies), JSON converter + modifier, DI helpers |
 | `PiiMasking.AspNetCore` | `AddPiiMaskingMvcJson()` to register the modifier on MVC `JsonOptions` |
 
 ## Quick start (ASP.NET Core)
@@ -78,9 +78,81 @@ public sealed class DisplayNamePlainIdContributor : IPiiMaskingPropertyContribut
 options.AddPiiMaskingJsonModifier(piiMaskingSettingsMonitor, propertyStringTransform);
 ```
 
-The single-argument `AddPiiMaskingJsonModifier(options, monitor)` path uses **built-in rules only** (no contributors).
+The overload `AddPiiMaskingJsonModifier(options, monitor)` (and the optional third `executionStrategies` argument) uses **built-in rules** and, when strategies are supplied, **`Mode`** on `[PiiMasking]`; it does **not** use **`IPiiMaskingPropertyContributor`**—use the overload that takes **`IPiiMaskedPropertyStringTransform`** for contributors.
 
 **Replacing the whole pipeline**: register your own `IPiiMaskedPropertyStringTransform` **before** `AddPiiMasking` so `TryAddSingleton` keeps yours (the default is not registered). If you register after `AddPiiMasking`, avoid duplicate `IPiiMaskedPropertyStringTransform` registrations for the same service provider.
+
+## Custom execution strategies (`IPiiMaskingExecutionStrategy`)
+
+Use a **named strategy** when you want masking rules that are **registered in DI** and selected **declaratively** on the property, instead of encoding everything in `[PiiMasking]` booleans or a contributor that branches on property names.
+
+### How it works
+
+1. Set **`[PiiMasking(Mode = ...)]`** to a non-empty string (ordinal, case-sensitive match).
+2. Register one or more **`IPiiMaskingExecutionStrategy`** implementations after **`AddPiiMasking`**.
+3. When masking is enabled, the default pipeline runs in order: **`IPiiMaskingPropertyContributor`** (first non-null wins) → **execution strategy** whose **`Name`** equals **`Mode`** → **built-in** rules (`AsEmail`, `MaskEachWord`, etc.).
+
+If **`Mode`** is set but **no** registered strategy has a matching **`Name`**, an **`InvalidOperationException`** is thrown (so misconfiguration fails fast).
+
+### Implement a strategy
+
+Implement **`IPiiMaskingExecutionStrategy`**:
+
+- **`Name`** — must match the attribute’s **`Mode`** exactly.
+- **`Mask(value, marker, settings)`** — return the masked string; `value` is never null.
+
+For **`[PiiMasking(Mode = ...)]`** you need a **compile-time constant**. A practical pattern is a **`public const string Name`** on your strategy type plus **explicit interface implementation** for **`Name`**, so the constant does not clash with an instance property:
+
+```csharp
+public sealed class RedactPhoneStrategy : IPiiMaskingExecutionStrategy
+{
+    public const string Name = "Phone";
+
+    string IPiiMaskingExecutionStrategy.Name => Name;
+
+    public string? Mask(string value, PiiMaskingAttribute marker, PiiMaskingSettings settings)
+    {
+        // Use settings.MaskSuffix, marker, your own rules, etc.
+        return "****";
+    }
+}
+```
+
+### Register and use (ASP.NET Core)
+
+```csharp
+builder.Services.AddPiiMasking(builder.Configuration);
+builder.Services.AddSingleton<IPiiMaskingExecutionStrategy, RedactPhoneStrategy>();
+builder.Services.AddPiiMaskingMvcJson();
+```
+
+On your model:
+
+```csharp
+[PiiMasking(Mode = RedactPhoneStrategy.Name)]
+public string? Mobile { get; set; }
+```
+
+**`AddPiiMaskingMvcJson()`** resolves **`IEnumerable<IPiiMaskingExecutionStrategy>`** from DI and passes it into the JSON modifier, so named strategies apply the same way as contributors—no extra wiring.
+
+### Manual `JsonSerializerOptions`
+
+The default **`PiiMaskingPropertyStringTransform`** constructor accepts **`IEnumerable<IPiiMaskingExecutionStrategy>?`**; the container injects all registered strategies automatically.
+
+When calling **`AddPiiMaskingJsonModifier`**, pass the **same** strategy instances (or the same enumerable from your composition root) as the **third argument** when you need **`Mode`** to work for edge cases where the modifier falls back to a converter without `PropertyInfo`:
+
+```csharp
+var strategies = serviceProvider.GetServices<IPiiMaskingExecutionStrategy>().ToList();
+var transform = serviceProvider.GetRequiredService<IPiiMaskedPropertyStringTransform>();
+
+options.AddPiiMaskingJsonModifier(piiMaskingSettingsMonitor, transform, strategies);
+```
+
+If you only use the two-parameter overload and a property uses **`Mode`** without a matching registered strategy, resolution can throw when that property is serialized.
+
+### Built-in helper `PiiMaskingTextFormatter`
+
+**`PiiMaskingTextFormatter.Apply`** applies **built-in rules only**; it does **not** resolve **`IPiiMaskingExecutionStrategy`**. Use **`IPiiMaskedPropertyStringTransform`** (or the JSON pipeline) if you need contributors and named strategies.
 
 ## Samples (input → output)
 

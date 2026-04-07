@@ -15,6 +15,7 @@ public sealed class PiiMaskedStringJsonConverter : JsonConverter<string>
     private readonly PiiMaskingAttribute _marker;
     private readonly IPiiMaskedPropertyStringTransform? _transform;
     private readonly PropertyInfo? _property;
+    private readonly IReadOnlyList<IPiiMaskingExecutionStrategy>? _executionStrategies;
 
     /// <summary>
     /// Creates a converter that applies masking via <paramref name="propertyStringTransform"/> (includes contributors).
@@ -29,17 +30,23 @@ public sealed class PiiMaskedStringJsonConverter : JsonConverter<string>
         _transform = propertyStringTransform ?? throw new ArgumentNullException(nameof(propertyStringTransform));
         _property = property ?? throw new ArgumentNullException(nameof(property));
         _marker = marker ?? throw new ArgumentNullException(nameof(marker));
+        _executionStrategies = null;
     }
 
     /// <summary>
     /// Creates a converter using built-in rules only (no <see cref="IPiiMaskingPropertyContributor"/>). Prefer the overload with <see cref="IPiiMaskedPropertyStringTransform"/> when wiring DI.
+    /// When <see cref="PiiMaskingAttribute.Mode"/> is set, pass <paramref name="executionStrategies"/> (same instances as <see cref="PiiMaskingPropertyStringTransform"/>) or serialization will throw.
     /// </summary>
-    public PiiMaskedStringJsonConverter(IOptionsMonitor<PiiMaskingSettings> settings, PiiMaskingAttribute marker)
+    public PiiMaskedStringJsonConverter(
+        IOptionsMonitor<PiiMaskingSettings> settings,
+        PiiMaskingAttribute marker,
+        IEnumerable<IPiiMaskingExecutionStrategy>? executionStrategies = null)
     {
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         _marker = marker ?? throw new ArgumentNullException(nameof(marker));
         _transform = null;
         _property = null;
+        _executionStrategies = executionStrategies?.ToList();
     }
 
     public override string? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
@@ -66,7 +73,9 @@ public sealed class PiiMaskedStringJsonConverter : JsonConverter<string>
         }
         else
         {
-            masked = PiiMaskingKernel.ApplyBuiltin(value, _marker, _settings.CurrentValue);
+            var strategies = _executionStrategies ?? Array.Empty<IPiiMaskingExecutionStrategy>();
+            var named = PiiMaskingExecutionStrategyInvoker.TryApplyNamedStrategy(strategies, value, _marker, _settings.CurrentValue);
+            masked = named ?? PiiMaskingKernel.ApplyBuiltin(value, _marker, _settings.CurrentValue);
         }
 
         writer.WriteStringValue(masked);

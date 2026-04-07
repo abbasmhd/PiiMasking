@@ -10,14 +10,19 @@ namespace PiiMasking.AspNetCore;
 /// </summary>
 public sealed class PiiMaskingMvcJsonPostConfigure(
     IOptionsMonitor<PiiMaskingSettings> piiMaskingSettings,
-    IPiiMaskedPropertyStringTransform propertyStringTransform)
+    IPiiMaskedPropertyStringTransform propertyStringTransform,
+    IEnumerable<IPiiMaskingExecutionStrategy> executionStrategies)
     : IPostConfigureOptions<JsonOptions>
 {
     private readonly IOptionsMonitor<PiiMaskingSettings> _piiMaskingSettings = piiMaskingSettings;
     private readonly IPiiMaskedPropertyStringTransform _propertyStringTransform = propertyStringTransform;
+    private readonly IEnumerable<IPiiMaskingExecutionStrategy> _executionStrategies = executionStrategies;
 
     public void PostConfigure(string? name, JsonOptions options)
     {
-        options.JsonSerializerOptions.AddPiiMaskingJsonModifier(_piiMaskingSettings, _propertyStringTransform);
+        options.JsonSerializerOptions.AddPiiMaskingJsonModifier(
+            _piiMaskingSettings,
+            _propertyStringTransform,
+            _executionStrategies);
     }
 }
