@@ -1,0 +1,69 @@
+name: .NET
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  release:
+    types: [published]
+  workflow_dispatch:
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-test-pack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Restore
+        run: dotnet restore abbasmhd.PiiMasking.sln
+
+      - name: Build
+        run: dotnet build abbasmhd.PiiMasking.sln -c Release --no-restore
+
+      - name: Test
+        run: dotnet test abbasmhd.PiiMasking.sln -c Release --no-build --verbosity normal
+
+      - name: Pack (CI)
+        if: github.event_name != 'release'
+        run: dotnet pack abbasmhd.PiiMasking.sln -c Release -o ./artifacts --no-build
+
+      - name: Pack (release)
+        if: github.event_name == 'release'
+        env:
+          TAG_NAME: ${{ github.event.release.tag_name }}
+        run: |
+          VERSION="${TAG_NAME#v}"
+          dotnet pack abbasmhd.PiiMasking.sln -c Release -o ./artifacts -p:Version="$VERSION" -p:PackageVersion="$VERSION"
+
+      - name: Upload packages artifact
+        if: github.event_name == 'release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages
+          path: ./artifacts/*.*
+
+      - name: Publish to NuGet.org
+        if: github.event_name == 'release'
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          dotnet nuget push ./artifacts/*.nupkg --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          if compgen -G "./artifacts/*.snupkg" > /dev/null; then
+            dotnet nuget push ./artifacts/*.snupkg --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          fi
