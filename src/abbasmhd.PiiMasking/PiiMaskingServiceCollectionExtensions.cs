@@ -30,7 +30,7 @@ public static class PiiMaskingServiceCollectionExtensions
 
             if (string.IsNullOrWhiteSpace(settings.MaskSuffix))
             {
-                settings.MaskSuffix = PiiStringMasking.DefaultMaskSuffix;
+                settings.MaskSuffix = PiiMaskingSettings.DefaultMaskSuffix;
             }
 
             if (settings.LiteralWordMaskSeparators is { Length: > 0 })

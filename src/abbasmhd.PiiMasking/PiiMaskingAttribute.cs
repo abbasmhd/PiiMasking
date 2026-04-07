@@ -13,7 +13,7 @@ public sealed class PiiMaskingAttribute : Attribute
     public bool AsEmail { get; init; }
 
     /// <summary>
-    /// When true, masks each whitespace-separated word with <see cref="PiiStringMasking.MaskSegment"/> (e.g. <c>Abe David</c> → <c>Ab**** Da****</c>).
+    /// When true, masks each whitespace-separated word using segment rules (first two characters + <see cref="PiiMaskingSettings.MaskSuffix"/>), e.g. <c>Abe David</c> → <c>Ab**** Da****</c>.
     /// Ignored when <see cref="AsEmail"/> is true.
     /// </summary>
     public bool MaskEachWord { get; init; }

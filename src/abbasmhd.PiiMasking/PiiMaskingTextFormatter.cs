@@ -8,7 +8,7 @@ public static class PiiMaskingTextFormatter
     /// <summary>
     /// Formats <paramref name="value"/> for outbound serialization when PII masking is enabled.
     /// </summary>
-    /// <param name="maskSuffix">From <see cref="PiiMaskingSettings.MaskSuffix"/>; null uses <see cref="PiiStringMasking.DefaultMaskSuffix"/>.</param>
+    /// <param name="maskSuffix">From <see cref="PiiMaskingSettings.MaskSuffix"/>; null uses <see cref="PiiMaskingSettings.DefaultMaskSuffix"/>.</param>
     /// <param name="literalWordMaskSeparators">From <see cref="PiiMaskingSettings.LiteralWordMaskSeparators"/> when using <see cref="PiiMaskingAttribute.MaskEachWordRespectingLiterals"/>.</param>
     public static string Apply(
         string value,
@@ -25,7 +25,7 @@ public static class PiiMaskingTextFormatter
         var settings = new PiiMaskingSettings
         {
             MaskSuffix = string.IsNullOrWhiteSpace(maskSuffix)
-                ? PiiStringMasking.DefaultMaskSuffix
+                ? PiiMaskingSettings.DefaultMaskSuffix
                 : maskSuffix,
             LiteralWordMaskSeparators = literalWordMaskSeparators is null
                 ? []

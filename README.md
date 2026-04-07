@@ -16,7 +16,7 @@ It is not a full data-classification or DLP product; it is a **focused building 
 
 | Package | Description |
 |--------|-------------|
-| `abbasmhd.PiiMasking` | Core: `PiiStringMasking`, `PiiMaskingSettings`, `[PiiMasking]`, JSON converter + modifier, DI helpers |
+| `abbasmhd.PiiMasking` | Core: `PiiMaskingSettings`, built-in masking strategies, `[PiiMasking]`, JSON converter + modifier, DI helpers |
 | `abbasmhd.PiiMasking.AspNetCore` | `AddPiiMaskingMvcJson()` to register the modifier on MVC `JsonOptions` |
 
 ## Quick start (ASP.NET Core)
@@ -64,7 +64,7 @@ public sealed class DisplayNamePlainIdContributor : IPiiMaskingPropertyContribut
         if (property.Name != nameof(UserDto.DisplayName))
             return null;
 
-        // Your rules: use marker / settings.MaskSuffix / PiiStringMasking helpers, etc.
+        // Your rules: use marker / settings.MaskSuffix / your own masking helpers, etc.
         return MyMasking.MaskDisplayNameWithPlainUserId(value, settings.MaskSuffix);
     }
 }
@@ -84,37 +84,37 @@ The single-argument `AddPiiMaskingJsonModifier(options, monitor)` path uses **bu
 
 ## Samples (input → output)
 
-Examples use the default mask suffix `****` (override with `PiiMasking:MaskSuffix` or the optional `maskSuffix` argument on `PiiStringMasking` methods).
+Examples use the default mask suffix `****` (`PiiMaskingSettings.DefaultMaskSuffix`; override with `PiiMasking:MaskSuffix`).
 
-### `PiiStringMasking` — segment and email
+### Built-in masking — segment and email
 
-| Input | Output | Method |
-|--------|--------|--------|
-| `samson` | `Sa****` | `MaskSegment` |
-| `Jo` | `Jo****` | `MaskSegment` |
-| `a` | `a****` | `MaskSegment` |
-| `samson.user@mail.example.com` | `Sa****@mail.example.com` | `MaskEmail` |
-| `joe@app.mail.contoso.com:443` | `Jo****@app.mail.contoso.com:443` | `MaskEmail` |
-| `ab@c.d` | `ab****@c.d` | `MaskEmail` |
+| Input | Output | Rule |
+|--------|--------|------|
+| `samson` | `Sa****` | Segment |
+| `Jo` | `Jo****` | Segment |
+| `a` | `a****` | Segment |
+| `samson.user@mail.example.com` | `Sa****@mail.example.com` | Email (local part only) |
+| `joe@app.mail.contoso.com:443` | `Jo****@app.mail.contoso.com:443` | Email |
+| `ab@c.d` | `ab****@c.d` | Email |
 
 If the value already contains the configured suffix (e.g. `Sa****`), it is returned trimmed and unchanged so you do not double-mask.
 
-### `PiiStringMasking` — each word
+### Built-in masking — each word
 
-| Input | Output | Method |
-|--------|--------|--------|
-| `Abe David Smith` | `Ab**** Da**** Sm****` | `MaskEachWord` |
-| `John  Doe` (extra spaces) | `Jo**** Do****` | `MaskEachWord` |
-| `Abe David (jdoe01)` | `Ab**** Da**** (j****` | `MaskEachWord` (parenthetical is one token) |
+| Input | Output | Rule |
+|--------|--------|------|
+| `Abe David Smith` | `Ab**** Da**** Sm****` | Each word |
+| `John  Doe` (extra spaces) | `Jo**** Do****` | Each word |
+| `Abe David (jdoe01)` | `Ab**** Da**** (j****` | Each word (parenthetical is one token) |
 
-### `PiiStringMasking` — literals (e.g. `" on behalf of "`)
+### Built-in masking — literals (e.g. `" on behalf of "`)
 
 With `LiteralWordMaskSeparators` including ` on behalf of ` (as in the config sample above):
 
-| Input | Output | Method |
-|--------|--------|--------|
-| `John Doe on behalf of Jane Smith` | `Jo**** Do**** on behalf of Ja**** Sm****` | `MaskEachWordRespectingLiterals` |
-| `John Doe (jodo01) on behalf of Jane Smith (jasm02)` | `Jo**** Do**** (j**** on behalf of Ja**** Sm**** (j****` | `MaskEachWordRespectingLiterals` |
+| Input | Output | Rule |
+|--------|--------|------|
+| `John Doe on behalf of Jane Smith` | `Jo**** Do**** on behalf of Ja**** Sm****` | Literals + each word |
+| `John Doe (jodo01) on behalf of Jane Smith (jasm02)` | `Jo**** Do**** (j**** on behalf of Ja**** Sm**** (j****` | Literals + each word |
 
 The literal text is matched case-insensitively but copied from the source (e.g. `ON BEHALF OF` stays as-is in the output).
 

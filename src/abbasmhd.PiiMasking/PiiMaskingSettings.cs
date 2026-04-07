@@ -8,6 +8,11 @@ public sealed class PiiMaskingSettings
     public const string SectionName = "PiiMasking";
 
     /// <summary>
+    /// Default mask suffix when none is supplied or configuration normalizes an empty value.
+    /// </summary>
+    public const string DefaultMaskSuffix = "****";
+
+    /// <summary>
     /// When false, marked string properties serialize as plain values.
     /// </summary>
     public bool Enabled { get; set; } = true;
@@ -15,7 +20,7 @@ public sealed class PiiMaskingSettings
     /// <summary>
     /// String appended when masking segments (default <c>****</c>). Bound from configuration; empty values are normalized at startup.
     /// </summary>
-    public string MaskSuffix { get; set; } = "****";
+    public string MaskSuffix { get; set; } = DefaultMaskSuffix;
 
     /// <summary>
     /// Substrings left unmasked (matched case-insensitively) when a property uses <see cref="PiiMaskingAttribute.MaskEachWordRespectingLiterals"/>.

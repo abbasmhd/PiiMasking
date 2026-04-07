@@ -1,4 +1,4 @@
-using abbasmhd.PiiMasking;
+using abbasmhd.PiiMasking.Strategies;
 
 namespace abbasmhd.PiiMasking.Tests;
 
@@ -9,7 +9,7 @@ public class PiiStringMaskingTests
     [Fact]
     public void MaskSegment_Null_ReturnsNull()
     {
-        Assert.Null(PiiStringMasking.MaskSegment(null));
+        Assert.Null(SegmentMaskingOperations.MaskSegment(null));
     }
 
     [Theory]
@@ -19,7 +19,7 @@ public class PiiStringMaskingTests
     [InlineData("samson", "Sa****")]
     public void MaskSegment_MasksAfterTwoCharacters(string input, string expected)
     {
-        Assert.Equal(expected, PiiStringMasking.MaskSegment(input));
+        Assert.Equal(expected, SegmentMaskingOperations.MaskSegment(input));
     }
 
     [Theory]
@@ -30,7 +30,7 @@ public class PiiStringMaskingTests
     [InlineData("XY", "XY****")]
     public void MaskSegment_ExactLengths_ProducesExpectedShape(string input, string expected)
     {
-        Assert.Equal(expected, PiiStringMasking.MaskSegment(input));
+        Assert.Equal(expected, SegmentMaskingOperations.MaskSegment(input));
     }
 
     [Theory]
@@ -38,27 +38,27 @@ public class PiiStringMaskingTests
     [InlineData("\tsamson\n", "Sa****")]
     public void MaskSegment_TrimsLeadingAndTrailingWhitespace(string input, string expected)
     {
-        Assert.Equal(expected, PiiStringMasking.MaskSegment(input));
+        Assert.Equal(expected, SegmentMaskingOperations.MaskSegment(input));
     }
 
     [Fact]
     public void MaskSegment_WhitespaceOnly_YieldsFixedMaskOnly()
     {
-        Assert.Equal("****", PiiStringMasking.MaskSegment("   "));
-        Assert.Equal("****", PiiStringMasking.MaskSegment("\t \t"));
+        Assert.Equal("****", SegmentMaskingOperations.MaskSegment("   "));
+        Assert.Equal("****", SegmentMaskingOperations.MaskSegment("\t \t"));
     }
 
     [Fact]
     public void MaskSegment_MixedCaseLongerString_NormalizesFirstTwoCharacters()
     {
-        Assert.Equal("Sa****", PiiStringMasking.MaskSegment("SAMSON"));
-        Assert.Equal("Jo****", PiiStringMasking.MaskSegment("John"));
+        Assert.Equal("Sa****", SegmentMaskingOperations.MaskSegment("SAMSON"));
+        Assert.Equal("Jo****", SegmentMaskingOperations.MaskSegment("John"));
     }
 
     [Fact]
     public void MaskSegment_Unicode_UsesInvariantCasingOnFirstTwoScalars()
     {
-        Assert.Equal("Jo****", PiiStringMasking.MaskSegment("José"));
+        Assert.Equal("Jo****", SegmentMaskingOperations.MaskSegment("José"));
     }
 
     [Theory]
@@ -68,7 +68,7 @@ public class PiiStringMaskingTests
     [InlineData("verylongname")]
     public void MaskSegment_AlwaysEndsWithExactlyFourAsterisks(string input)
     {
-        var result = PiiStringMasking.MaskSegment(input)!;
+        var result = SegmentMaskingOperations.MaskSegment(input)!;
         Assert.EndsWith("****", result);
         Assert.Equal(4, result.Count(c => c == '*'));
     }
@@ -76,56 +76,56 @@ public class PiiStringMaskingTests
     [Fact]
     public void MaskEmail_MasksLocalOnly_DomainUnchanged()
     {
-        var result = PiiStringMasking.MaskEmail("samson.user@mail.example.com");
+        var result = EmailMaskingOperations.MaskEmail("samson.user@mail.example.com");
         Assert.Equal("Sa****@mail.example.com", result);
     }
 
     [Fact]
     public void MaskEmail_WithoutAt_FallsBackToSegment()
     {
-        Assert.Equal("Sa****", PiiStringMasking.MaskEmail("samson"));
+        Assert.Equal("Sa****", EmailMaskingOperations.MaskEmail("samson"));
     }
 
     [Fact]
     public void MaskEmail_ShortLocal_DomainUnchanged()
     {
-        Assert.Equal("ab****@c.d", PiiStringMasking.MaskEmail("ab@c.d"));
+        Assert.Equal("ab****@c.d", EmailMaskingOperations.MaskEmail("ab@c.d"));
     }
 
     [Fact]
     public void MaskEmail_Null_ReturnsNull()
     {
-        Assert.Null(PiiStringMasking.MaskEmail(null));
+        Assert.Null(EmailMaskingOperations.MaskEmail(null));
     }
 
     [Fact]
     public void MaskEmail_Empty_ReturnsEmpty()
     {
-        Assert.Equal(string.Empty, PiiStringMasking.MaskEmail(string.Empty));
+        Assert.Equal(string.Empty, EmailMaskingOperations.MaskEmail(string.Empty));
     }
 
     [Fact]
     public void MaskEmail_TrimsOuterWhitespace()
     {
-        Assert.Equal("Sa****@contoso.com", PiiStringMasking.MaskEmail("  samson@contoso.com  "));
+        Assert.Equal("Sa****@contoso.com", EmailMaskingOperations.MaskEmail("  samson@contoso.com  "));
     }
 
     [Fact]
     public void MaskEmail_LocalEmpty_PreservesDomain()
     {
-        Assert.Equal("@contoso.com", PiiStringMasking.MaskEmail("@contoso.com"));
+        Assert.Equal("@contoso.com", EmailMaskingOperations.MaskEmail("@contoso.com"));
     }
 
     [Fact]
     public void MaskEmail_DomainEmpty_StillAppendsAt()
     {
-        Assert.Equal("Us****@", PiiStringMasking.MaskEmail("user@"));
+        Assert.Equal("Us****@", EmailMaskingOperations.MaskEmail("user@"));
     }
 
     [Fact]
     public void MaskEmail_FirstAtSplitsRestIsDomainLiteral()
     {
-        Assert.Equal("a****@b@c.org", PiiStringMasking.MaskEmail("a@b@c.org"));
+        Assert.Equal("a****@b@c.org", EmailMaskingOperations.MaskEmail("a@b@c.org"));
     }
 
     [Fact]
@@ -133,14 +133,14 @@ public class PiiStringMaskingTests
     {
         Assert.Equal(
             "Jo****@app.mail.contoso.com:443",
-            PiiStringMasking.MaskEmail("joe@app.mail.contoso.com:443"));
+            EmailMaskingOperations.MaskEmail("joe@app.mail.contoso.com:443"));
     }
 
     [Fact]
     public void MaskEmail_LocalUsesSegmentRules_IncludingShortLocal()
     {
-        Assert.Equal("a****@x", PiiStringMasking.MaskEmail("a@x"));
-        Assert.Equal("Ab****@y", PiiStringMasking.MaskEmail("Ab@y"));
+        Assert.Equal("a****@x", EmailMaskingOperations.MaskEmail("a@x"));
+        Assert.Equal("Ab****@y", EmailMaskingOperations.MaskEmail("Ab@y"));
     }
 
     [Theory]
@@ -149,27 +149,27 @@ public class PiiStringMaskingTests
     [InlineData("x****y", "x****y")]
     public void MaskSegment_WhenAlreadyContainsFourAsterisks_ReturnsTrimmedUnchanged(string input, string expected)
     {
-        Assert.Equal(expected, PiiStringMasking.MaskSegment(input));
+        Assert.Equal(expected, SegmentMaskingOperations.MaskSegment(input));
     }
 
     [Fact]
     public void MaskEmail_WhenAlreadyContainsFourAsterisks_ReturnsTrimmedUnchanged()
     {
         const string already = "Jo****@contoso.com";
-        Assert.Equal(already, PiiStringMasking.MaskEmail($"  {already}  "));
+        Assert.Equal(already, EmailMaskingOperations.MaskEmail($"  {already}  "));
     }
 
     [Fact]
     public void MaskEmail_WhenDomainContainsFourAsterisks_ReturnsWholeAddressUnchanged()
     {
         const string value = "user@pa****.example.com";
-        Assert.Equal(value, PiiStringMasking.MaskEmail(value));
+        Assert.Equal(value, EmailMaskingOperations.MaskEmail(value));
     }
 
     [Fact]
     public void MaskEachWord_Null_ReturnsNull()
     {
-        Assert.Null(PiiStringMasking.MaskEachWord(null));
+        Assert.Null(EachWordMaskingOperations.MaskEachWord(null));
     }
 
     [Theory]
@@ -179,13 +179,13 @@ public class PiiStringMaskingTests
     [InlineData("a b", "a**** b****")]
     public void MaskEachWord_MasksEveryWhitespaceSeparatedToken(string input, string expected)
     {
-        Assert.Equal(expected, PiiStringMasking.MaskEachWord(input));
+        Assert.Equal(expected, EachWordMaskingOperations.MaskEachWord(input));
     }
 
     [Fact]
     public void MaskEachWordRespectingLiterals_Null_ReturnsNull()
     {
-        Assert.Null(PiiStringMasking.MaskEachWordRespectingLiterals(null, OnBehalfOfSeparator));
+        Assert.Null(EachWordRespectingLiteralsMaskingOperations.MaskEachWordRespectingLiterals(null, OnBehalfOfSeparator));
     }
 
     [Theory]
@@ -193,7 +193,7 @@ public class PiiStringMaskingTests
     [InlineData("   ")]
     public void MaskEachWordRespectingLiterals_EmptyOrWhitespaceOnly_ReturnsEmpty(string input)
     {
-        Assert.Equal(string.Empty, PiiStringMasking.MaskEachWordRespectingLiterals(input, OnBehalfOfSeparator));
+        Assert.Equal(string.Empty, EachWordRespectingLiteralsMaskingOperations.MaskEachWordRespectingLiterals(input, OnBehalfOfSeparator));
     }
 
     [Theory]
@@ -203,7 +203,7 @@ public class PiiStringMaskingTests
     [InlineData("SingleToken on behalf of Other", "Si**** on behalf of Ot****")]
     public void MaskEachWordRespectingLiterals_LeavesConfiguredLiteralPlain(string input, string expected)
     {
-        Assert.Equal(expected, PiiStringMasking.MaskEachWordRespectingLiterals(input, OnBehalfOfSeparator));
+        Assert.Equal(expected, EachWordRespectingLiteralsMaskingOperations.MaskEachWordRespectingLiterals(input, OnBehalfOfSeparator));
     }
 
     [Theory]
@@ -211,7 +211,7 @@ public class PiiStringMaskingTests
     [InlineData("john doe On BeHaLf Of jane", "Jo**** Do**** On BeHaLf Of Ja****")]
     public void MaskEachWordRespectingLiterals_CaseInsensitiveMatch_PreservesSourceCasingOfLiteral(string input, string expected)
     {
-        Assert.Equal(expected, PiiStringMasking.MaskEachWordRespectingLiterals(input, OnBehalfOfSeparator));
+        Assert.Equal(expected, EachWordRespectingLiteralsMaskingOperations.MaskEachWordRespectingLiterals(input, OnBehalfOfSeparator));
     }
 
     [Theory]
@@ -219,8 +219,8 @@ public class PiiStringMaskingTests
     [InlineData("John Doe", "Jo**** Do****")]
     public void MaskEachWordRespectingLiterals_NoConfiguredSeparators_FallsBackToMaskEachWord(string input, string expected)
     {
-        Assert.Equal(expected, PiiStringMasking.MaskEachWordRespectingLiterals(input, []));
-        Assert.Equal(expected, PiiStringMasking.MaskEachWordRespectingLiterals(input, null));
+        Assert.Equal(expected, EachWordRespectingLiteralsMaskingOperations.MaskEachWordRespectingLiterals(input, []));
+        Assert.Equal(expected, EachWordRespectingLiteralsMaskingOperations.MaskEachWordRespectingLiterals(input, null));
     }
 
     [Theory]
@@ -229,7 +229,7 @@ public class PiiStringMaskingTests
     [InlineData("NoLiteralHere", "No****")]
     public void MaskEachWordRespectingLiterals_NoMatchInValue_FallsBackToMaskEachWord(string input, string expected)
     {
-        Assert.Equal(expected, PiiStringMasking.MaskEachWordRespectingLiterals(input, OnBehalfOfSeparator));
+        Assert.Equal(expected, EachWordRespectingLiteralsMaskingOperations.MaskEachWordRespectingLiterals(input, OnBehalfOfSeparator));
     }
 
     [Fact]
@@ -237,7 +237,7 @@ public class PiiStringMaskingTests
     {
         Assert.Equal(
             "Jo**** Do**** On**** Be**** Of**** Ja**** Sm****",
-            PiiStringMasking.MaskEachWordRespectingLiterals("John Doe On Behalf Of Jane Smith", new[] { "", "" }));
+            EachWordRespectingLiteralsMaskingOperations.MaskEachWordRespectingLiterals("John Doe On Behalf Of Jane Smith", new[] { "", "" }));
     }
 
     [Theory]
@@ -245,14 +245,14 @@ public class PiiStringMaskingTests
     [InlineData("A on behalf of B", "xx", "Axx on behalf of Bxx")]
     public void MaskEachWordRespectingLiterals_CustomMaskSuffix(string input, string suffix, string expected)
     {
-        Assert.Equal(expected, PiiStringMasking.MaskEachWordRespectingLiterals(input, OnBehalfOfSeparator, suffix));
+        Assert.Equal(expected, EachWordRespectingLiteralsMaskingOperations.MaskEachWordRespectingLiterals(input, OnBehalfOfSeparator, suffix));
     }
 
     [Fact]
     public void MaskEachWordRespectingLiterals_MultipleSeparators_SplitsInOrder()
     {
         var seps = new[] { " on behalf of ", " representing " };
-        var result = PiiStringMasking.MaskEachWordRespectingLiterals(
+        var result = EachWordRespectingLiteralsMaskingOperations.MaskEachWordRespectingLiterals(
             "Alice Bob on behalf of Carol Dan representing Eve Frank",
             seps);
         Assert.Equal(
@@ -264,7 +264,7 @@ public class PiiStringMaskingTests
     public void MaskEachWordRespectingLiterals_EarliestSeparatorWins_ThenContinues()
     {
         var seps = new[] { " bar ", " foo " };
-        var result = PiiStringMasking.MaskEachWordRespectingLiterals("a foo x bar y", seps);
+        var result = EachWordRespectingLiteralsMaskingOperations.MaskEachWordRespectingLiterals("a foo x bar y", seps);
         Assert.Equal("a**** foo x**** bar y****", result);
     }
 
@@ -272,7 +272,7 @@ public class PiiStringMaskingTests
     public void MaskEachWordRespectingLiterals_AtSameIndex_PrefersLongerSeparator()
     {
         var seps = new[] { " on ", " on behalf of " };
-        var result = PiiStringMasking.MaskEachWordRespectingLiterals("A B on behalf of C D", seps);
+        var result = EachWordRespectingLiteralsMaskingOperations.MaskEachWordRespectingLiterals("A B on behalf of C D", seps);
         Assert.Equal("A**** B**** on behalf of C**** D****", result);
     }
 
@@ -281,13 +281,13 @@ public class PiiStringMaskingTests
     [InlineData("  Jo**** Do****  ", "Jo**** Do****")]
     public void MaskEachWordRespectingLiterals_WhenAlreadyContainsMaskSuffix_ReturnsTrimmedUnchanged(string input, string expected)
     {
-        Assert.Equal(expected, PiiStringMasking.MaskEachWordRespectingLiterals(input, OnBehalfOfSeparator));
+        Assert.Equal(expected, EachWordRespectingLiteralsMaskingOperations.MaskEachWordRespectingLiterals(input, OnBehalfOfSeparator));
     }
 
     [Fact]
     public void MaskEachWordRespectingLiterals_TwoConsecutiveRounds_OfSameLiteral()
     {
-        var result = PiiStringMasking.MaskEachWordRespectingLiterals(
+        var result = EachWordRespectingLiteralsMaskingOperations.MaskEachWordRespectingLiterals(
             "Alpha on behalf of Beta on behalf of Gamma",
             OnBehalfOfSeparator);
         Assert.Equal("Al**** on behalf of Be**** on behalf of Ga****", result);
@@ -297,7 +297,7 @@ public class PiiStringMaskingTests
     public void MaskEachWordRespectingLiterals_LeaveRemainderUnmasked_KeepsTextAfterLastLiteralPlain()
     {
         var seps = new[] { " on " };
-        var masked = PiiStringMasking.MaskEachWordRespectingLiterals(
+        var masked = EachWordRespectingLiteralsMaskingOperations.MaskEachWordRespectingLiterals(
             "Preamble text on 01-Jan-2024 3:00 PM.",
             seps,
             maskSuffix: null,
