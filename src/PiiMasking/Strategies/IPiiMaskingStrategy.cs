@@ -1,4 +1,4 @@
-namespace abbasmhd.PiiMasking.Strategies;
+namespace PiiMasking.Strategies;
 
 /// <summary>
 /// Selects and applies one built-in masking rule for a <see cref="PiiMaskingAttribute"/>.

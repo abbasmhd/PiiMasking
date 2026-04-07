@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace abbasmhd.PiiMasking;
+namespace PiiMasking;
 
 /// <summary>
 /// Hook for custom JSON serializers to apply the same masking as <see cref="PiiMaskingAttribute"/> / <see cref="Serialization.PiiMaskedStringJsonConverter"/>.

@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Options;
 
-namespace abbasmhd.PiiMasking;
+namespace PiiMasking;
 
 /// <summary>
 /// Default <see cref="IOptionsMonitor{T}"/> when tests or hosts omit configuration binding.

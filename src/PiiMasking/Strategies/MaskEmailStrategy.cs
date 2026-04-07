@@ -1,6 +1,6 @@
-using abbasmhd.PiiMasking;
+using PiiMasking;
 
-namespace abbasmhd.PiiMasking.Strategies;
+namespace PiiMasking.Strategies;
 
 /// <summary>
 /// Email masking implementation (duplicated per strategy file by design).

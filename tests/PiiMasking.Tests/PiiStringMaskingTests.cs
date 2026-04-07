@@ -1,6 +1,6 @@
-using abbasmhd.PiiMasking.Strategies;
+using PiiMasking.Strategies;
 
-namespace abbasmhd.PiiMasking.Tests;
+namespace PiiMasking.Tests;
 
 public class PiiStringMaskingTests
 {

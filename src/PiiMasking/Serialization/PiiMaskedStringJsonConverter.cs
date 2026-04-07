@@ -3,7 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Options;
 
-namespace abbasmhd.PiiMasking.Serialization;
+namespace PiiMasking.Serialization;
 
 /// <summary>
 /// Writes masked strings when <see cref="PiiMaskingSettings.Enabled"/> is true; reads plain strings from JSON.

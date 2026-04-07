@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using abbasmhd.PiiMasking;
-using abbasmhd.PiiMasking.Serialization;
+using PiiMasking;
+using PiiMasking.Serialization;
 
-namespace abbasmhd.PiiMasking.AspNetCore;
+namespace PiiMasking.AspNetCore;
 
 /// <summary>
 /// Wires PII string masking for MVC <see cref="JsonOptions"/> using <see cref="PiiMaskingSettings"/> and <see cref="IPiiMaskedPropertyStringTransform"/>.

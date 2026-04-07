@@ -3,7 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.Options;
 
-namespace abbasmhd.PiiMasking.Serialization;
+namespace PiiMasking.Serialization;
 
 /// <summary>
 /// Applies <see cref="PiiMaskedStringJsonConverter"/> to properties marked with <see cref="PiiMaskingAttribute"/>.

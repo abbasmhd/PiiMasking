@@ -1,7 +1,7 @@
 using System.Text;
-using abbasmhd.PiiMasking;
+using PiiMasking;
 
-namespace abbasmhd.PiiMasking.Strategies;
+namespace PiiMasking.Strategies;
 
 /// <summary>
 /// Literals-aware word masking implementation (duplicated per strategy file by design).

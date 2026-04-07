@@ -1,8 +1,8 @@
-# abbasmhd.PiiMasking
+# PiiMasking
 
-abbasmhd.PiiMasking is a **personally identifiable information (PII) masking** library for .NET applications that serialize models with **System.Text.Json**. It applies **declarative, configuration-driven** transforms to selected `string` properties when **writing** JSON—partially obscuring values such as display names or email local parts—while **deserialization** continues to populate models with **unmodified** strings from incoming payloads.
+PiiMasking is a **personally identifiable information (PII) masking** library for .NET applications that serialize models with **System.Text.Json**. It applies **declarative, configuration-driven** transforms to selected `string` properties when **writing** JSON—partially obscuring values such as display names or email local parts—while **deserialization** continues to populate models with **unmodified** strings from incoming payloads.
 
-The core package integrates via **`JsonTypeInfo` modifiers**, **`Microsoft.Extensions.Options`**, and optional **dependency injection** helpers for use in custom pipelines. **abbasmhd.PiiMasking.AspNetCore** adds **ASP.NET Core MVC** integration by registering the same behavior on **`JsonOptions`**, so HTTP APIs can enable masking without hand-wiring converters per type.
+The core package integrates via **`JsonTypeInfo` modifiers**, **`Microsoft.Extensions.Options`**, and optional **dependency injection** helpers for use in custom pipelines. **PiiMasking.AspNetCore** adds **ASP.NET Core MVC** integration by registering the same behavior on **`JsonOptions`**, so HTTP APIs can enable masking without hand-wiring converters per type.
 
 ## Purpose
 
@@ -16,8 +16,8 @@ It is not a full data-classification or DLP product; it is a **focused building 
 
 | Package | Description |
 |--------|-------------|
-| `abbasmhd.PiiMasking` | Core: `PiiMaskingSettings`, built-in masking strategies, `[PiiMasking]`, JSON converter + modifier, DI helpers |
-| `abbasmhd.PiiMasking.AspNetCore` | `AddPiiMaskingMvcJson()` to register the modifier on MVC `JsonOptions` |
+| `PiiMasking` | Core: `PiiMaskingSettings`, built-in masking strategies, `[PiiMasking]`, JSON converter + modifier, DI helpers |
+| `PiiMasking.AspNetCore` | `AddPiiMaskingMvcJson()` to register the modifier on MVC `JsonOptions` |
 
 ## Quick start (ASP.NET Core)
 
@@ -166,7 +166,7 @@ The **.NET** workflow restores, builds, runs tests, and packs the solution. It i
 
 ### Publish to NuGet from CI
 
-1. In the GitHub repo, open **Settings** → **Secrets and variables** → **Actions** and add a secret named **`NUGET_API_KEY`** with a [NuGet API key](https://www.nuget.org/account/apikeys) that has permission to **push** the package IDs `abbasmhd.PiiMasking` and `abbasmhd.PiiMasking.AspNetCore`.
+1. In the GitHub repo, open **Settings** → **Secrets and variables** → **Actions** and add a secret named **`NUGET_API_KEY`** with a [NuGet API key](https://www.nuget.org/account/apikeys) that has permission to **push** the package IDs `PiiMasking` and `PiiMasking.AspNetCore`.
 2. Create a [GitHub Release](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository) and **publish** it. Use a tag that matches the version you want on NuGet (e.g. `1.0.1` or `v1.0.1`). The workflow maps that tag to `PackageVersion` for both packable projects.
 3. After the workflow succeeds, confirm the versions on [nuget.org](https://www.nuget.org/).
 

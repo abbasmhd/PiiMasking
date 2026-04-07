@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace abbasmhd.PiiMasking;
+namespace PiiMasking;
 
 /// <summary>
 /// Optional extension point: run before built-in <see cref="PiiMaskingAttribute"/> rules when masking is enabled.

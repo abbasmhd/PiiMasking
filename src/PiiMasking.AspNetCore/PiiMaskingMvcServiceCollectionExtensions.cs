@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace abbasmhd.PiiMasking.AspNetCore;
+namespace PiiMasking.AspNetCore;
 
 /// <summary>
 /// ASP.NET Core registration helpers for MVC JSON masking.

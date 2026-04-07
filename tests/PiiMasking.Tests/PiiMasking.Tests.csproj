@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\abbasmhd.PiiMasking\abbasmhd.PiiMasking.csproj" />
+    <ProjectReference Include="..\..\src\PiiMasking\PiiMasking.csproj" />
   </ItemGroup>
 
 </Project>

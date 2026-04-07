@@ -2,10 +2,10 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.Options;
-using abbasmhd.PiiMasking.Serialization;
+using PiiMasking.Serialization;
 using Xunit;
 
-namespace abbasmhd.PiiMasking.Tests;
+namespace PiiMasking.Tests;
 
 public class PiiMaskingPropertyContributorTests
 {

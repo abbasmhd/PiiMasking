@@ -1,6 +1,6 @@
-using abbasmhd.PiiMasking;
+using PiiMasking;
 
-namespace abbasmhd.PiiMasking.Strategies;
+namespace PiiMasking.Strategies;
 
 /// <summary>
 /// Each-word masking implementation (duplicated per strategy file by design).

@@ -1,7 +1,7 @@
 using System.Reflection;
 using Microsoft.Extensions.Options;
 
-namespace abbasmhd.PiiMasking;
+namespace PiiMasking;
 
 /// <summary>
 /// Applies <see cref="PiiMaskingAttribute"/> using <see cref="IOptionsMonitor{T}"/> of <see cref="PiiMaskingSettings"/> (for custom outbound JSON pipelines and MVC JSON).

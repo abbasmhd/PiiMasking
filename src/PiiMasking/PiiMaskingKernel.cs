@@ -1,6 +1,6 @@
-using abbasmhd.PiiMasking.Strategies;
+using PiiMasking.Strategies;
 
-namespace abbasmhd.PiiMasking;
+namespace PiiMasking;
 
 /// <summary>
 /// Built-in masking rules shared by <see cref="PiiMaskingPropertyStringTransform"/> and JSON fallback paths.

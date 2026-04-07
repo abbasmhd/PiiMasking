@@ -1,4 +1,4 @@
-namespace abbasmhd.PiiMasking;
+namespace PiiMasking;
 
 /// <summary>
 /// Applies <see cref="PiiMaskingAttribute"/> rules to a string (aligned with <see cref="Serialization.PiiMaskedStringJsonConverter"/> for JSON write behavior).

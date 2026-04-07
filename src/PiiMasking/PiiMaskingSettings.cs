@@ -1,4 +1,4 @@
-namespace abbasmhd.PiiMasking;
+namespace PiiMasking;
 
 /// <summary>
 /// Controls masking of personally identifiable string values in JSON for properties marked with <see cref="PiiMaskingAttribute"/>.

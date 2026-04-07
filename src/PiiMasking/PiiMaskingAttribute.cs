@@ -1,4 +1,4 @@
-namespace abbasmhd.PiiMasking;
+namespace PiiMasking;
 
 /// <summary>
 /// Marks a string property for PII masking during JSON serialization when <see cref="PiiMaskingSettings.Enabled"/> is true.
