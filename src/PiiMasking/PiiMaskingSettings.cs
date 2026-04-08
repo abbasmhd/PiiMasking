@@ -25,6 +25,8 @@ public sealed class PiiMaskingSettings
     /// <summary>
     /// Substrings left unmasked (matched case-insensitively) when a property uses <see cref="PiiMaskingAttribute.MaskEachWordRespectingLiterals"/>.
     /// Text between matches is word-masked. Include leading/trailing spaces in entries when the source text has them (e.g. <c> on behalf of </c>).
+    /// Example: with separators <c>[" on behalf of "]</c>, the value "John Doe on behalf of Jane Smith" becomes "Jo**** Do**** on behalf of Ja**** Sm****".
+    /// Separator matching is case-insensitive, but the matched text from the source is copied as-is, preserving its original casing.
     /// </summary>
     public string[] LiteralWordMaskSeparators { get; set; } = [];
 }

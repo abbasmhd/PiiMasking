@@ -33,10 +33,18 @@ public static class PiiMaskingServiceCollectionExtensions
                 settings.MaskSuffix = PiiMaskingSettings.DefaultMaskSuffix;
             }
 
+            // Validate mask suffix length
+            if (settings.MaskSuffix.Length > 20)
+            {
+                throw new InvalidOperationException(
+                    $"PiiMaskingSettings.MaskSuffix must be 20 characters or fewer. Current length: {settings.MaskSuffix.Length}");
+            }
+
             if (settings.LiteralWordMaskSeparators is { Length: > 0 })
             {
                 settings.LiteralWordMaskSeparators = settings.LiteralWordMaskSeparators
                     .Where(static s => !string.IsNullOrEmpty(s))
+                    .Distinct(StringComparer.Ordinal)
                     .ToArray();
             }
         });

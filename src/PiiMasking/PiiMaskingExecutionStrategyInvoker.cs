@@ -27,7 +27,12 @@ internal static class PiiMaskingExecutionStrategyInvoker
             }
         }
 
+        var availableStrategies = strategies.Count == 0
+            ? "(none registered)"
+            : string.Join(", ", strategies.Select(s => $"'{s.Name}'"));
+
         throw new InvalidOperationException(
-            $"No {nameof(IPiiMaskingExecutionStrategy)} is registered with {nameof(IPiiMaskingExecutionStrategy.Name)} '{marker.Mode}' for {nameof(PiiMaskingAttribute.Mode)}.");
+            $"No {nameof(IPiiMaskingExecutionStrategy)} is registered with {nameof(IPiiMaskingExecutionStrategy.Name)} '{marker.Mode}' for {nameof(PiiMaskingAttribute.Mode)}. " +
+            $"Available strategies: {availableStrategies}");
     }
 }

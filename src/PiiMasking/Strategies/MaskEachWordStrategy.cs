@@ -1,50 +1,25 @@
-using PiiMasking;
-
 namespace PiiMasking.Strategies;
 
 /// <summary>
-/// Each-word masking implementation (duplicated per strategy file by design).
+/// Each-word masking operations forwarding to shared <see cref="MaskingOperationsBase"/>.
 /// </summary>
 internal static class EachWordMaskingOperations
 {
     internal static string ResolveSuffix(string? maskSuffix) =>
-        string.IsNullOrEmpty(maskSuffix) ? PiiMaskingSettings.DefaultMaskSuffix : maskSuffix;
+        MaskingOperationsBase.ResolveSuffix(maskSuffix);
 
     internal static bool ContainsMaskSuffix(string s, string suffix) =>
-        suffix.Length > 0 && s.Contains(suffix, StringComparison.Ordinal);
+        MaskingOperationsBase.ContainsMaskSuffix(s, suffix);
 
-    internal static string? MaskSegment(string? value, string? maskSuffix = null)
-    {
-        var suffix = ResolveSuffix(maskSuffix);
-        if (value is null)
-        {
-            return null;
-        }
+    internal static string? MaskSegment(string? value, string? maskSuffix = null) =>
+        MaskingOperationsBase.MaskSegment(value, maskSuffix);
 
-        if (value.Length == 0)
-        {
-            return string.Empty;
-        }
-
-        var s = value.Trim();
-        if (ContainsMaskSuffix(s, suffix))
-        {
-            return s;
-        }
-
-        if (s.Length <= 2)
-        {
-            return s + suffix;
-        }
-
-        var first = char.ToUpperInvariant(s[0]);
-        var second = char.ToLowerInvariant(s[1]);
-        return string.Concat(first, second, suffix);
-    }
-
+    /// <summary>
+    /// Masks each whitespace-separated word with segment rules (first two characters + suffix).
+    /// </summary>
     internal static string? MaskEachWord(string? value, string? maskSuffix = null)
     {
-        var suffix = ResolveSuffix(maskSuffix);
+        var suffix = MaskingOperationsBase.ResolveSuffix(maskSuffix);
         if (value is null)
         {
             return null;
@@ -56,7 +31,7 @@ internal static class EachWordMaskingOperations
         }
 
         var trimmed = value.Trim();
-        if (ContainsMaskSuffix(trimmed, suffix))
+        if (MaskingOperationsBase.ContainsMaskSuffix(trimmed, suffix))
         {
             return trimmed;
         }

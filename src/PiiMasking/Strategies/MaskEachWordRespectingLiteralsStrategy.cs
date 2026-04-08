@@ -1,51 +1,27 @@
 using System.Text;
-using PiiMasking;
 
 namespace PiiMasking.Strategies;
 
 /// <summary>
-/// Literals-aware word masking implementation (duplicated per strategy file by design).
+/// Literals-aware word masking operations forwarding common operations to shared <see cref="MaskingOperationsBase"/>.
 /// </summary>
 internal static class EachWordRespectingLiteralsMaskingOperations
 {
     internal static string ResolveSuffix(string? maskSuffix) =>
-        string.IsNullOrEmpty(maskSuffix) ? PiiMaskingSettings.DefaultMaskSuffix : maskSuffix;
+        MaskingOperationsBase.ResolveSuffix(maskSuffix);
 
     internal static bool ContainsMaskSuffix(string s, string suffix) =>
-        suffix.Length > 0 && s.Contains(suffix, StringComparison.Ordinal);
+        MaskingOperationsBase.ContainsMaskSuffix(s, suffix);
 
-    internal static string? MaskSegment(string? value, string? maskSuffix = null)
-    {
-        var suffix = ResolveSuffix(maskSuffix);
-        if (value is null)
-        {
-            return null;
-        }
+    internal static string? MaskSegment(string? value, string? maskSuffix = null) =>
+        MaskingOperationsBase.MaskSegment(value, maskSuffix);
 
-        if (value.Length == 0)
-        {
-            return string.Empty;
-        }
-
-        var s = value.Trim();
-        if (ContainsMaskSuffix(s, suffix))
-        {
-            return s;
-        }
-
-        if (s.Length <= 2)
-        {
-            return s + suffix;
-        }
-
-        var first = char.ToUpperInvariant(s[0]);
-        var second = char.ToLowerInvariant(s[1]);
-        return string.Concat(first, second, suffix);
-    }
-
+    /// <summary>
+    /// Masks each whitespace-separated word with segment rules (first two characters + suffix).
+    /// </summary>
     internal static string? MaskEachWord(string? value, string? maskSuffix = null)
     {
-        var suffix = ResolveSuffix(maskSuffix);
+        var suffix = MaskingOperationsBase.ResolveSuffix(maskSuffix);
         if (value is null)
         {
             return null;
@@ -57,7 +33,7 @@ internal static class EachWordRespectingLiteralsMaskingOperations
         }
 
         var trimmed = value.Trim();
-        if (ContainsMaskSuffix(trimmed, suffix))
+        if (MaskingOperationsBase.ContainsMaskSuffix(trimmed, suffix))
         {
             return trimmed;
         }
@@ -76,16 +52,26 @@ internal static class EachWordRespectingLiteralsMaskingOperations
         return string.Join(' ', parts);
     }
 
+    /// <summary>
+    /// Masks words while preserving configured literal substrings (case-insensitive matching with source casing preserved).
+    /// </summary>
     internal static string? MaskEachWordRespectingLiterals(string? value, IReadOnlyList<string>? literalSeparators, string? maskSuffix = null) =>
         MaskEachWordRespectingLiterals(value, literalSeparators, maskSuffix, leaveRemainderUnmasked: false);
 
+    /// <summary>
+    /// Masks words while preserving configured literal substrings (case-insensitive matching with source casing preserved).
+    /// </summary>
+    /// <param name="value">The value to mask.</param>
+    /// <param name="literalSeparators">Substrings to preserve unmasked (matched case-insensitively).</param>
+    /// <param name="maskSuffix">The suffix to append during masking.</param>
+    /// <param name="leaveRemainderUnmasked">When true, text after the last matched literal is left unmasked.</param>
     internal static string? MaskEachWordRespectingLiterals(
         string? value,
         IReadOnlyList<string>? literalSeparators,
         string? maskSuffix,
         bool leaveRemainderUnmasked)
     {
-        var suffix = ResolveSuffix(maskSuffix);
+        var suffix = MaskingOperationsBase.ResolveSuffix(maskSuffix);
         if (value is null)
         {
             return null;
@@ -97,7 +83,7 @@ internal static class EachWordRespectingLiteralsMaskingOperations
         }
 
         var trimmed = value.Trim();
-        if (ContainsMaskSuffix(trimmed, suffix))
+        if (MaskingOperationsBase.ContainsMaskSuffix(trimmed, suffix))
         {
             return trimmed;
         }

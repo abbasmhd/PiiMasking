@@ -19,8 +19,8 @@ public sealed class PiiMaskingPropertyStringTransform : IPiiMaskedPropertyString
         IEnumerable<IPiiMaskingExecutionStrategy>? executionStrategies = null)
     {
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
-        _contributors = (contributors ?? Array.Empty<IPiiMaskingPropertyContributor>()).ToList();
-        _executionStrategies = (executionStrategies ?? Array.Empty<IPiiMaskingExecutionStrategy>()).ToList();
+        _contributors = contributors?.ToList() ?? [];
+        _executionStrategies = executionStrategies?.ToList() ?? [];
     }
 
     /// <inheritdoc />
