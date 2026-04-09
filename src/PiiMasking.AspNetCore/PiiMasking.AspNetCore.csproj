@@ -7,7 +7,7 @@
     <RootNamespace>PiiMasking.AspNetCore</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
-    <Version>1.0.0</Version>
+    <Version>0.0.1</Version>
     <Authors>abbasmhd</Authors>
     <Description>ASP.NET Core MVC JSON integration for PiiMasking.</Description>
     <PackageId>PiiMasking.AspNetCore</PackageId>

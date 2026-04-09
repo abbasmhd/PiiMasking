@@ -7,10 +7,10 @@
     <RootNamespace>PiiMasking</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591;1573;0419</NoWarn>
-    <Version>1.0.0</Version>
+    <Version>0.0.1</Version>
     <Authors>abbasmhd</Authors>
-    <Description>PII masking for System.Text.Json and Microsoft.Extensions.Options.</Description>
-    <PackageId>PiiMasking</PackageId>
+    <Description>A .NET library for masking PII in System.Text.Json output, with ASP.NET Core integration and extensible masking strategies.</Description>
+    <PackageId>PiiMasking.Core</PackageId>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryType>git</RepositoryType>

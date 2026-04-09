@@ -16,7 +16,7 @@ The library is designed for outbound data shaping. Your in-memory models stay un
 
 | Package | Purpose |
 | --- | --- |
-| [`PiiMasking`](https://www.nuget.org/packages/PiiMasking) | Core library: settings, built-in masking rules, `[PiiMasking]`, JSON modifier/converter, and DI registration |
+| [`PiiMasking.Core`](https://www.nuget.org/packages/PiiMasking.Core) | Core library: settings, built-in masking rules, `[PiiMasking]`, JSON modifier/converter, and DI registration |
 | [`PiiMasking.AspNetCore`](https://www.nuget.org/packages/PiiMasking.AspNetCore) | ASP.NET Core MVC integration via `AddPiiMaskingMvcJson()` |
 
 Supported target frameworks:
@@ -29,7 +29,7 @@ Supported target frameworks:
 Install the core package:
 
 ```bash
-dotnet add package PiiMasking
+dotnet add package PiiMasking.Core
 ```
 
 If you want ASP.NET Core MVC integration, add the companion package as well:
@@ -244,7 +244,7 @@ The `.github/workflows/dotnet.yml` workflow:
 
 To publish from CI:
 
-1. Add a `NUGET_API_KEY` repository secret with permission to push `PiiMasking` and `PiiMasking.AspNetCore`.
+1. Add a `NUGET_API_KEY` repository secret with permission to push `PiiMasking.Core` and `PiiMasking.AspNetCore`.
 2. Publish a GitHub release with the target version tag, such as `1.0.1` or `v1.0.1`.
 3. Confirm the published packages on [nuget.org](https://www.nuget.org/).
 
