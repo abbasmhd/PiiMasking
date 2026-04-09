@@ -11,8 +11,11 @@
     <Authors>abbasmhd</Authors>
     <Description>ASP.NET Core MVC JSON integration for PiiMasking.</Description>
     <PackageId>PiiMasking.AspNetCore</PackageId>
+    <PackageProjectUrl>https://github.com/abbasmhd/PiiMasking</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>dotnet;csharp;aspnetcore;system-text-json;json;pii;privacy;data-masking;serialization</PackageTags>
+    <RepositoryUrl>https://github.com/abbasmhd/PiiMasking</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>

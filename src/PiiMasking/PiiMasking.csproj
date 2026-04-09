@@ -11,8 +11,11 @@
     <Authors>abbasmhd</Authors>
     <Description>A .NET library for masking PII in System.Text.Json output, with ASP.NET Core integration and extensible masking strategies.</Description>
     <PackageId>PiiMasking.Core</PackageId>
+    <PackageProjectUrl>https://github.com/abbasmhd/PiiMasking</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>dotnet;csharp;system-text-json;json;pii;privacy;data-masking;serialization</PackageTags>
+    <RepositoryUrl>https://github.com/abbasmhd/PiiMasking</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
