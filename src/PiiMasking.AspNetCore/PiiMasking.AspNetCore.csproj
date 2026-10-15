@@ -7,7 +7,7 @@
     <RootNamespace>PiiMasking.AspNetCore</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
-    <Version>0.0.1</Version>
+    <Version>0.0.2</Version>
     <Authors>abbasmhd</Authors>
     <Description>ASP.NET Core MVC JSON integration for PiiMasking.</Description>
     <PackageId>PiiMasking.AspNetCore</PackageId>
@@ -20,6 +20,10 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PiiMasking.Tests" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />

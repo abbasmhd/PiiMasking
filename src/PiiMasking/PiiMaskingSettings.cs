@@ -1,3 +1,5 @@
+using PiiMasking.Bypass;
+
 namespace PiiMasking;
 
 /// <summary>
@@ -29,4 +31,9 @@ public sealed class PiiMaskingSettings
     /// Separator matching is case-insensitive, but the matched text from the source is copied as-is, preserving its original casing.
     /// </summary>
     public string[] LiteralWordMaskSeparators { get; set; } = [];
+
+    /// <summary>
+    /// Bypass sources (roles, claims, authorization policy) for which masking is skipped. Null (or an unset <c>Bypass</c> section) means masking is always applied.
+    /// </summary>
+    public PiiMaskingBypassSettings? Bypass { get; set; }
 }

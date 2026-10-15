@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Options;
+using PiiMasking.Bypass;
 
 namespace PiiMasking.Serialization;
 
@@ -16,6 +17,8 @@ public sealed class PiiMaskedStringJsonConverter : JsonConverter<string>
     private readonly IPiiMaskedPropertyStringTransform? _transform;
     private readonly PropertyInfo? _property;
     private readonly IReadOnlyList<IPiiMaskingExecutionStrategy>? _executionStrategies;
+    private readonly PiiMaskingBypassContextAccessor? _bypassContextAccessor;
+    private readonly IReadOnlyList<IPiiMaskingBypassProvider>? _bypassProviders;
 
     /// <summary>
     /// Creates a converter that applies masking via <paramref name="propertyStringTransform"/> (includes contributors).
@@ -36,17 +39,22 @@ public sealed class PiiMaskedStringJsonConverter : JsonConverter<string>
     /// <summary>
     /// Creates a converter using built-in rules only (no <see cref="IPiiMaskingPropertyContributor"/>). Prefer the overload with <see cref="IPiiMaskedPropertyStringTransform"/> when wiring DI.
     /// When <see cref="PiiMaskingAttribute.Mode"/> is set, pass <paramref name="executionStrategies"/> (same instances as <see cref="PiiMaskingPropertyStringTransform"/>) or serialization will throw.
+    /// Pass <paramref name="bypassContextAccessor"/> and <paramref name="bypassProviders"/> to honor the masking bypass (roles, claims, policy, or custom providers).
     /// </summary>
     public PiiMaskedStringJsonConverter(
         IOptionsMonitor<PiiMaskingSettings> settings,
         PiiMaskingAttribute marker,
-        IEnumerable<IPiiMaskingExecutionStrategy>? executionStrategies = null)
+        IEnumerable<IPiiMaskingExecutionStrategy>? executionStrategies = null,
+        PiiMaskingBypassContextAccessor? bypassContextAccessor = null,
+        IEnumerable<IPiiMaskingBypassProvider>? bypassProviders = null)
     {
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         _marker = marker ?? throw new ArgumentNullException(nameof(marker));
         _transform = null;
         _property = null;
         _executionStrategies = executionStrategies?.ToList();
+        _bypassContextAccessor = bypassContextAccessor;
+        _bypassProviders = bypassProviders?.ToList();
     }
 
     public override string? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
@@ -73,6 +81,12 @@ public sealed class PiiMaskedStringJsonConverter : JsonConverter<string>
         }
         else
         {
+            if (PiiMaskingBypassEvaluator.ShouldBypass(_bypassContextAccessor, _bypassProviders))
+            {
+                writer.WriteStringValue(value);
+                return;
+            }
+
             var strategies = _executionStrategies ?? Array.Empty<IPiiMaskingExecutionStrategy>();
             var named = PiiMaskingExecutionStrategyInvoker.TryApplyNamedStrategy(strategies, value, _marker, _settings.CurrentValue);
             masked = named ?? PiiMaskingKernel.ApplyBuiltin(value, _marker, _settings.CurrentValue);

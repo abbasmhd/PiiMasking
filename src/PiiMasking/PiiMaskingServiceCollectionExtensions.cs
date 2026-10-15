@@ -2,12 +2,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using PiiMasking.Bypass;
 
 namespace PiiMasking;
 
 /// <summary>
 /// Registers <see cref="PiiMaskingSettings"/> and <see cref="IPiiMaskedPropertyStringTransform"/>.
 /// Register <see cref="IPiiMaskingPropertyContributor"/> and <see cref="IPiiMaskingExecutionStrategy"/> implementations with <c>AddSingleton</c> to extend masking (contributors first, then strategies selected by <see cref="PiiMaskingAttribute.Mode"/>, then built-ins).
+/// Register custom <see cref="IPiiMaskingBypassProvider"/> implementations (e.g. a database-flag check) to skip masking for selected users; built-in role and claim providers are registered automatically.
 /// </summary>
 public static class PiiMaskingServiceCollectionExtensions
 {
@@ -47,8 +49,34 @@ public static class PiiMaskingServiceCollectionExtensions
                     .Distinct(StringComparer.Ordinal)
                     .ToArray();
             }
+
+            if (settings.Bypass is { } bypass)
+            {
+                if (bypass.Roles is { Length: > 0 })
+                {
+                    bypass.Roles = bypass.Roles
+                        .Where(static r => !string.IsNullOrWhiteSpace(r))
+                        .Distinct(StringComparer.Ordinal)
+                        .ToArray();
+                }
+
+                if (bypass.Claims is { Length: > 0 })
+                {
+                    bypass.Claims = bypass.Claims
+                        .Where(static c => !string.IsNullOrWhiteSpace(c.Type))
+                        .ToArray();
+                }
+
+                if (string.IsNullOrWhiteSpace(bypass.Policy))
+                {
+                    bypass.Policy = null;
+                }
+            }
         });
 
+        services.TryAddSingleton<PiiMaskingBypassContextAccessor>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPiiMaskingBypassProvider, RoleBypassProvider>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPiiMaskingBypassProvider, ClaimBypassProvider>());
         services.TryAddSingleton<IPiiMaskedPropertyStringTransform, PiiMaskingPropertyStringTransform>();
         return services;
     }
