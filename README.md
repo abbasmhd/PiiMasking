@@ -10,6 +10,7 @@ The library is designed for outbound data shaping. Your in-memory models stay un
 - Keep masking behavior configuration-driven
 - Support ASP.NET Core MVC without per-model converter wiring
 - Extend the pipeline with contributors, named strategies, or a custom transform
+- Bypass masking for selected users by role, claim, authorization policy, or a custom per-user flag
 - Preserve normal deserialization behavior for incoming payloads
 
 ## Packages
@@ -106,6 +107,7 @@ By default, `[PiiMasking]` applies segment-style masking. You can opt into other
 | `Enabled` | Turns masking on or off | `true` when omitted |
 | `MaskSuffix` | Suffix appended to masked values | `****` |
 | `LiteralWordMaskSeparators` | Separators used by literal-aware masking | Empty |
+| `Bypass` | Sources (roles, claims, policy) that skip masking | Not set (always mask) |
 
 ## Built-in masking modes
 
@@ -122,6 +124,66 @@ Notes:
 - Literal-aware masking uses `PiiMasking:LiteralWordMaskSeparators` and preserves the matched literal text from the source.
 - If a value already includes the configured mask suffix, the built-in logic avoids double-masking it.
 - `LeaveRemainderUnmaskedAfterLiterals` can be combined with `MaskEachWordRespectingLiterals` when you want text after the last literal separator to remain unchanged.
+
+## Bypassing masking for selected users
+
+Masking is skipped entirely for the current user when any bypass source matches. All sources are opt-in, and the decision is made once per request. A failing bypass source never leaks PII: masking stays applied (fail-closed).
+
+Configure built-in sources under `PiiMasking:Bypass`:
+
+```json
+{
+  "PiiMasking": {
+    "Enabled": true,
+    "Bypass": {
+      "Roles": ["PiiViewer"],
+      "Claims": [{ "Type": "permission", "Value": "pii:read" }],
+      "Policy": "CanViewRawPii"
+    }
+  }
+}
+```
+
+- `Roles`: users in any listed role (via `ClaimsPrincipal.IsInRole`) see plain values.
+- `Claims`: users holding any listed claim (empty `Value` matches any value of the type) see plain values.
+- `Policy`: an ASP.NET Core authorization policy; users it passes see plain values.
+
+For the policy source, enable the bypass middleware in the ASP.NET Core package:
+
+```csharp
+builder.Services.AddPiiMasking(builder.Configuration);
+builder.Services.AddPiiMaskingMvcJson();
+builder.Services.AddPiiMaskingBypass();
+```
+
+```csharp
+app.UseAuthentication();
+app.UseAuthorization();
+app.UsePiiMaskingBypass(); // after UseAuthentication/UseAuthorization
+```
+
+For any other source — such as a per-user flag in the database — implement `IPiiMaskingBypassProvider` and resolve the decision from the request-scoped services exposed on the bypass context:
+
+```csharp
+public sealed class DbFlagBypassProvider : IPiiMaskingBypassProvider
+{
+    public bool ShouldBypass(PiiMaskingBypassContext context)
+    {
+        if (context.RequestServices?.GetService<UserMaskingSettings>() is not { } userSettings)
+        {
+            return false;
+        }
+
+        return userSettings.MaskingDisabledForCurrentUser;
+    }
+}
+```
+
+```csharp
+builder.Services.AddSingleton<IPiiMaskingBypassProvider, DbFlagBypassProvider>();
+```
+
+Keep database-backed providers cheap: the bypass decision is evaluated at most once per request and then cached, so a scoped lookup in `ShouldBypass` (e.g. preload user settings in a service) runs once, not per serialized property.
 
 ## Extensibility
 

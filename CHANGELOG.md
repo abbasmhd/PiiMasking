@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Added
+
+- Masking bypass for selected users via the `PiiMasking:Bypass` configuration section: roles, claims, and an ASP.NET Core authorization policy
+- `IPiiMaskingBypassProvider` extension point for custom sources (e.g. a per-user flag in the database); the decision is evaluated at most once per request and cached
+- `AddPiiMaskingBypass()` / `UsePiiMaskingBypass()` in `PiiMasking.AspNetCore` to enable the bypass pipeline and per-request policy evaluation
+- Fail-closed guarantee: a throwing bypass provider never disables masking, and failures are logged
+
 ## [0.0.1] - 2026-04-09
 
 Initial public release of `PiiMasking`.

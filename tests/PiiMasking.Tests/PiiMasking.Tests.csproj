@@ -14,6 +14,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\PiiMasking\PiiMasking.csproj" />
+    <ProjectReference Include="..\..\src\PiiMasking.AspNetCore\PiiMasking.AspNetCore.csproj" />
   </ItemGroup>
 
 </Project>
